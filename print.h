@@ -24,13 +24,13 @@ void print(const double& v, const char* s = "\n"){
 void print(const int& v, const char* s = "\n"){
 	double exp = log10(fabs(v));
 	if(exp<(4)) printf("%4d%s", v, s);
-	else printf("%4e%s", v, s);
+	else printf("%4e%s", (double)v, s);
 }
 
 void print(const uint32_t& v, const char* s = "\n"){
 	double exp = log10(fabs(v));
 	if(exp<(4)) printf("%4d%s", v, s);
-	else printf("%4e%s", v, s);
+	else printf("%4e%s", (double)v, s);
 }
 
 void print(const vec3& a, const char* s = "\n"){
