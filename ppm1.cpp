@@ -12,7 +12,7 @@
 #include <cassert>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "./stbi/stb_image_write.h"
+#include <stb/stb_image_write.h>
 
 #include "vec.h"
 #include "Scene.h"
