@@ -61,6 +61,7 @@ struct hitpoint{
 struct Photon{
 	vec3 p;
 	vec3 ph;
+	vec3 wi;
 
-	Photon(vec3 _p, vec3 _ph):p(_p), ph(_ph){}
+	Photon(vec3 _p, vec3 _ph, vec3 _wi):p(_p), ph(_ph), wi(_wi){}
 };

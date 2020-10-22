@@ -225,7 +225,7 @@ int main(void){
 				Intersection is = intersect(ray, scene);
 				Material& mtl = scene.materials[is.mtlID];
 
-				photonmap.push_back(Photon(is.p, ph));
+				photonmap.push_back(Photon(is.p, ph, -ray.d));
 
 				//update ray and radiant intensity
 				{
