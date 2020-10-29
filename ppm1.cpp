@@ -51,7 +51,7 @@ int main(void){
 	// create output directory.
 	// using string for dir-name to later create output filename
 	// because the format of path::c_str depends on OS.
-	std::string outDir("result");
+	std::string outDir("result_master");
 	if(!( std::filesystem::exists(outDir) && std::filesystem::is_directory(outDir) )){
 		std::cout <<"mkdir " <<outDir <<std::endl;
 		printBr();
@@ -69,12 +69,12 @@ int main(void){
 	vec3* result_emit = new vec3[width*height];
 
 	// render parameters
-	int nIteration = 1000;
-	int outInterval = 50;
+	int nIteration = 10000;
+	int outInterval = 500;
 
-	int nPhoton = 100;
-	int nRay = 4;
-	double alpha = 0.8;
+	int nPhoton = 1000;
+	int nRay = 128;
+	double alpha = 0.7;
 
 	std::vector<hitpoint> hitpoints = createHitpoints(scene, width, height, nRay, &rand, result_emit);
 
