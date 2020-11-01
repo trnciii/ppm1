@@ -10,6 +10,8 @@ struct vec3{
 	vec3():x(0), y(0), z(0) {}
 	vec3(double v):x(v), y(v), z(v) {}
 	vec3(double _x, double _y, double _z):x(_x), y(_y), z(_z){}
+
+	double operator [] (uint32_t a){return (a==0)? x : (a==1)? y : z;}
 };
 
 vec3 operator +(vec3 a, vec3 b){return vec3(a.x+b.x, a.y+b.y, a.z+b.z);}
