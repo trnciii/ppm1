@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <vector>
 #include "vec.h"
+#include "data.h"
 
 struct Tree{
 
@@ -10,23 +11,23 @@ struct Tree{
 		vec3 min;
 		vec3 max;
 
-		std::vector<vec3>::iterator begin;
+		std::vector<Photon>::iterator begin;
 		uint32_t size;
 		uint32_t next;
 
-		Node(const std::vector<vec3>::iterator b,
-			const std::vector<vec3>::iterator e)
-		:min(b[0]), max(b[0]), size(e-b), next(0), begin(b)
+		Node(const std::vector<Photon>::iterator b,
+			const std::vector<Photon>::iterator e)
+		:min(b[0].p), max(b[0].p), size(e-b), next(0), begin(b)
 		{
 			for(int i=1; i<size; i++){
 				// min = min(min, begin[i]);
-				if(begin[i].x < min.x) min.x = begin[i].x;
-				if(begin[i].y < min.y) min.y = begin[i].y;
-				if(begin[i].z < min.z) min.z = begin[i].z;
+				if(begin[i].p.x < min.x) min.x = begin[i].p.x;
+				if(begin[i].p.y < min.y) min.y = begin[i].p.y;
+				if(begin[i].p.z < min.z) min.z = begin[i].p.z;
 				// max = max(max, begin[i]);
-				if(max.x < begin[i].x) max.x = begin[i].x;
-				if(max.y < begin[i].y) max.y = begin[i].y;
-				if(max.z < begin[i].z) max.z = begin[i].z;
+				if(max.x < begin[i].p.x) max.x = begin[i].p.x;
+				if(max.y < begin[i].p.y) max.y = begin[i].p.y;
+				if(max.z < begin[i].p.z) max.z = begin[i].p.z;
 			}
 		}
 
@@ -45,16 +46,16 @@ struct Tree{
 
 private:
 
-	std::vector<vec3> verts;
+	std::vector<Photon> verts;
 	std::vector<Node> nodes;
 	const uint32_t nElements = 1000;
 
-	void split(const std::vector<vec3>::iterator verts_begin,
-		const std::vector<vec3>::iterator verts_end,
+	void split(const std::vector<Photon>::iterator verts_begin,
+		const std::vector<Photon>::iterator verts_end,
 		const int axis)
 	{
-		std::sort(verts_begin, verts_end, [axis](vec3 a, vec3 b){return a[axis] < b[axis];});	
-		std::vector<vec3>::iterator verts_mid =  verts_begin+(verts_end-verts_begin)/2; // split by count
+		std::sort(verts_begin, verts_end, [axis](Photon a, Photon b){return a.p[axis] < b.p[axis];});	
+		std::vector<Photon>::iterator verts_mid =  verts_begin+(verts_end-verts_begin)/2; // split by count
 
 		uint32_t p0 = nodes.size();
 		{
@@ -91,17 +92,17 @@ public:
 		return true;
 	}
 
-	std::vector<vec3> searchNN(vec3 p, float r){
-		if(!hasTree()) return searchNN_checkAll(p,r);
+	std::vector<Photon> searchNN(const hitpoint& hit){
+		if(!hasTree()) return searchNN_checkAll(hit);
 
-		std::vector<vec3> result;
+		std::vector<Photon> result;
 
 		auto node = nodes.begin();
 		while(node < nodes.end()){
-			if(node->intersect(p, r)){
+			if(node->intersect(hit.p, hit.R)){
 				if(node->size <= nElements)
 					for(int i=0; i<node->size; i++)
-						if(abs(node->begin[i] - p) < r)
+						if(abs(node->begin[i].p - hit.p) < hit.R)
 							result.push_back(node->begin[i]);
 
 				node++;
@@ -112,24 +113,24 @@ public:
 		return result;
 	}
 
-	std::vector<vec3> searchNN_checkAll(vec3 p, float r){
-		std::vector<vec3> result;
+	std::vector<Photon> searchNN_checkAll(const hitpoint& hit){
+		std::vector<Photon> result;
 		
 		for(auto v : verts)
-			if(abs(v-p) < r)
+			if(abs(v.p-hit.p) < hit.R)
 				result.push_back(v);
 
 		return result;
 	}
 
-	void copyElements(vec3* const elements, uint32_t size){
-		std::vector<vec3> v(elements, elements+size);
+	void copyElements(Photon* const elements, uint32_t size){
+		std::vector<Photon> v(elements, elements+size);
 		verts.swap(v);
 		nodes.clear();
 	}
 
-	void addElements(vec3* const elements, uint32_t size){
-		std::vector<vec3> v(elements, elements+size);
+	void addElements(Photon* const elements, uint32_t size){
+		std::vector<Photon> v(elements, elements+size);
 		verts.reserve(verts.size()+size);
 		std::copy(v.begin(), v.end(), back_inserter(verts));
 		nodes.clear();
@@ -139,6 +140,6 @@ public:
 
 	std::vector<Node> getNodes(){return nodes;}
 
-	std::vector<vec3> getElements(){return verts;}
+	std::vector<Photon> getElements(){return verts;}
 
 };

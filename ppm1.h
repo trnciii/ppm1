@@ -6,6 +6,7 @@
 #include "vec.h"
 #include "Scene.h"
 #include "Random.h"
+#include "kdtree.h"
 
 unsigned char tonemap(double c){
 	int c_out = 255*pow(c,(1/2.2)) +0.5;
@@ -96,7 +97,7 @@ std::vector<hitpoint> createHitpoints(
 {
 	std::vector<hitpoint> hitpoints;
 	hitpoints.reserve(width*height*nRay);
-	double initialRadius = 3;
+	double initialRadius = 1;
 
 	// collect hitpoints
 	for(int i=0; i<width*height*nRay; i++){
@@ -166,21 +167,23 @@ std::vector<Photon> createPhotonmap(const Scene& scene, int nPhoton, RNG* const 
 	return photonmap;
 }
 
-void accumulateRadiance(std::vector<hitpoint>& hitpoints, const std::vector<Photon>& photonmap, const Scene& scene, const double alpha){
+void accumulateRadiance(std::vector<hitpoint>& hitpoints, Tree& photonmap, const Scene& scene, const double alpha){
+	#pragma omp parallel for schedule(dynamic)
 	for(hitpoint& hit : hitpoints){
 		const Material& mtl = scene.materials[hit.mtlID];
 
 		int M = 0;
 		vec3 tauM = 0;
-		for(const Photon& photon : photonmap){
+
+		std::vector<Photon> candidates = photonmap.searchNN(hit);
+		for(const Photon& photon : candidates){
 			double d = abs(photon.p, hit.p);
-			if(d<hit.R /*&& fabs(dot(hit.n, normalize(photon.p-hit.p))) < hit.R * hit.R * 0.1*/ ){
-				double photonFilter = 3*(1 - d/hit.R) / (kPI*hit.R*hit.R); // cone
-				// double photonFilter = 1/(kPI*hit.R*hit.R); // constant
-				tauM += photonFilter * photon.ph * mtl.color /kPI; // times BSDF
-				M++;
-			}
+			double photonFilter = 3*(1 - d/hit.R) / (kPI*hit.R*hit.R); // cone
+			// double photonFilter = 1/(kPI*hit.R*hit.R); // constant
+			tauM += photonFilter * photon.ph * mtl.color /kPI; // times BSDF
+			M++;
 		}
+
 
 		if(hit.N==0){
 			hit.N += M;

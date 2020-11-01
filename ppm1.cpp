@@ -8,6 +8,7 @@
 
 #include <filesystem>
 #include <cassert>
+#include <iostream>
 
 #include "ppm1.h"
 #include "print.h"
@@ -69,24 +70,30 @@ int main(void){
 	vec3* result_emit = new vec3[width*height];
 
 	// render parameters
-	int nIteration = 10000;
-	int outInterval = 500;
+	int nIteration = 1000;
+	int outInterval = 20;
 
-	int nPhoton = 1000;
-	int nRay = 128;
+	int nPhoton = 100000;
+	int nRay = 4;
 	double alpha = 0.7;
 
 	std::vector<hitpoint> hitpoints = createHitpoints(scene, width, height, nRay, &rand, result_emit);
 
 	// progressive estimation pass
 	for(int iteration=1; iteration<=nIteration; iteration++){
+		std::cout <<"itr = " <<iteration <<std::endl;
 
-		std::vector<Photon> photonmap = createPhotonmap(scene, nPhoton, &rand);
+		std::vector<Photon> photons = createPhotonmap(scene, nPhoton, &rand);
+		std::cout <<"cast photons" <<std::endl;
+		Tree photonmap;
+		photonmap.copyElements(photons.data(), photons.size());
+		photonmap.build();
+		std::cout <<"create tree" <<std::endl;
 		accumulateRadiance(hitpoints, photonmap, scene, alpha);
+		std::cout <<"accumulate radiance" <<std::endl;
 
 		// compose an image
 		if(iteration%outInterval == 0 || iteration == nIteration){
-			std::cout <<"itr = " <<iteration <<std::endl;
 
 			// std::fill(result, result+(width*height), vec3(0));
 			memcpy(result, result_emit, width*height*sizeof(vec3));
