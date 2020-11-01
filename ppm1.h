@@ -97,7 +97,7 @@ std::vector<hitpoint> createHitpoints(
 {
 	std::vector<hitpoint> hitpoints;
 	hitpoints.reserve(width*height*nRay);
-	double initialRadius = 1;
+	double initialRadius = 2;
 
 	// collect hitpoints
 	for(int i=0; i<width*height*nRay; i++){
@@ -118,9 +118,9 @@ std::vector<hitpoint> createHitpoints(
 	return hitpoints;
 }
 
-std::vector<Photon> createPhotonmap(const Scene& scene, int nPhoton, RNG* const rand){
-	std::vector<Photon> photonmap;
-	photonmap.reserve(10*nPhoton);
+Tree createPhotonmap(const Scene& scene, int nPhoton, RNG* const rand){
+	std::vector<Photon> photons;
+	photons.reserve(10*nPhoton);
 
 	for(int n=0; n<nPhoton; n++){
 		const Sphere& source = scene.spheres[scene.lights[0]];
@@ -146,7 +146,9 @@ std::vector<Photon> createPhotonmap(const Scene& scene, int nPhoton, RNG* const 
 			Intersection is = intersect(ray, scene);
 			const Material& mtl = scene.materials[is.mtlID];
 
-			photonmap.push_back(Photon(is.p, ph, -ray.d));
+			if(mtl.type == Material::Type::EMIT) break;
+
+			photons.push_back(Photon(is.p, ph, -ray.d));
 
 			//update ray and radiant intensity
 			{
@@ -160,11 +162,15 @@ std::vector<Photon> createPhotonmap(const Scene& scene, int nPhoton, RNG* const 
 			
 			ph *= mtl.color/pTerminate;
 
-			pTerminate = std::min(max(ph), 5.0);
+			pTerminate = max(mtl.color);
 		}
 	}
 
-	return photonmap;
+	Tree tree;
+	tree.copyElements(photons.data(), photons.size());
+	tree.build();
+
+	return tree;
 }
 
 void accumulateRadiance(std::vector<hitpoint>& hitpoints, Tree& photonmap, const Scene& scene, const double alpha){
@@ -175,9 +181,11 @@ void accumulateRadiance(std::vector<hitpoint>& hitpoints, Tree& photonmap, const
 		int M = 0;
 		vec3 tauM = 0;
 
-		std::vector<Photon> candidates = photonmap.searchNN(hit);
-		for(const Photon& photon : candidates){
-			double d = abs(photon.p, hit.p);
+		std::vector<std::pair<Photon, double>> candidates = photonmap.searchNN(hit);
+		for(const std::pair<Photon, double>& c : candidates){
+			const Photon& photon = c.first;
+			const double& d = c.second;
+
 			double photonFilter = 3*(1 - d/hit.R) / (kPI*hit.R*hit.R); // cone
 			// double photonFilter = 1/(kPI*hit.R*hit.R); // constant
 			tauM += photonFilter * photon.ph * mtl.color /kPI; // times BSDF

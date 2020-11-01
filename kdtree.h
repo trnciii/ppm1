@@ -92,18 +92,24 @@ public:
 		return true;
 	}
 
-	std::vector<Photon> searchNN(const hitpoint& hit){
+	std::vector<std::pair<Photon, double>> searchNN(const hitpoint& hit){
 		if(!hasTree()) return searchNN_checkAll(hit);
 
-		std::vector<Photon> result;
+		std::vector<std::pair<Photon, double>> result;
 
 		auto node = nodes.begin();
 		while(node < nodes.end()){
 			if(node->intersect(hit.p, hit.R)){
 				if(node->size <= nElements)
-					for(int i=0; i<node->size; i++)
-						if(abs(node->begin[i].p - hit.p) < hit.R)
-							result.push_back(node->begin[i]);
+					for(int i=0; i<node->size; i++){
+						Photon& photon = node->begin[i];
+						vec3 d = photon.p - hit.p;
+						double l = abs(d);
+						d /= l;
+
+						if(l < hit.R && dot(hit.n, d) < hit.R*hit.R*0.01)
+							result.push_back(std::pair<Photon, double>(node->begin[i], l));
+					}
 
 				node++;
 			}
@@ -113,12 +119,14 @@ public:
 		return result;
 	}
 
-	std::vector<Photon> searchNN_checkAll(const hitpoint& hit){
-		std::vector<Photon> result;
+	std::vector<std::pair<Photon, double>> searchNN_checkAll(const hitpoint& hit){
+		std::vector<std::pair<Photon, double>> result;
 		
-		for(auto v : verts)
-			if(abs(v.p-hit.p) < hit.R)
-				result.push_back(v);
+		for(auto v : verts){
+			double d = abs(v.p-hit.p);
+			if(d < hit.R)
+				result.push_back(std::pair<Photon, double>(v, d));
+		}
 
 		return result;
 	}

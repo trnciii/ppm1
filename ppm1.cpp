@@ -44,7 +44,6 @@ int initScene(Scene* s){
 	s->add(Sphere(vec3(1.5, 0.5, 1.5), 1.5, white));
 	s->add(Sphere(vec3(0,0,6), 0.5, light)); // light
 
-	print(*s);
 	return 0;
 }
 
@@ -61,6 +60,7 @@ int main(void){
 	
 	Scene scene;
 	initScene(&scene);
+	print(scene);
 
 	RNG rand;
 
@@ -70,7 +70,7 @@ int main(void){
 	vec3* result_emit = new vec3[width*height];
 
 	// render parameters
-	int nIteration = 1000;
+	int nIteration = 10000;
 	int outInterval = 20;
 
 	int nPhoton = 100000;
@@ -81,16 +81,10 @@ int main(void){
 
 	// progressive estimation pass
 	for(int iteration=1; iteration<=nIteration; iteration++){
-		std::cout <<"itr = " <<iteration <<std::endl;
+		std::cout <<"itr " <<iteration <<std::endl;
 
-		std::vector<Photon> photons = createPhotonmap(scene, nPhoton, &rand);
-		std::cout <<"cast photons" <<std::endl;
-		Tree photonmap;
-		photonmap.copyElements(photons.data(), photons.size());
-		photonmap.build();
-		std::cout <<"create tree" <<std::endl;
+		Tree photonmap = createPhotonmap(scene, nPhoton, &rand);
 		accumulateRadiance(hitpoints, photonmap, scene, alpha);
-		std::cout <<"accumulate radiance" <<std::endl;
 
 		// compose an image
 		if(iteration%outInterval == 0 || iteration == nIteration){
