@@ -181,14 +181,11 @@ void accumulateRadiance(std::vector<hitpoint>& hitpoints, Tree& photonmap, const
 		int M = 0;
 		vec3 tauM = 0;
 
-		std::vector<std::pair<Photon, double>> candidates = photonmap.searchNN(hit);
-		for(const std::pair<Photon, double>& c : candidates){
-			const Photon& photon = c.first;
-			const double& d = c.second;
-
-			double photonFilter = 3*(1 - d/hit.R) / (kPI*hit.R*hit.R); // cone
+		std::vector<Tree::Result> nearPhotons = photonmap.searchNN(hit);
+		for(const Tree::Result& p : nearPhotons){
+			double photonFilter = 3*(1 - p.distance/hit.R) / (kPI*hit.R*hit.R); // cone
 			// double photonFilter = 1/(kPI*hit.R*hit.R); // constant
-			tauM += photonFilter * photon.ph * mtl.color /kPI; // times BSDF
+			tauM += photonFilter * p.photon.ph * mtl.color /kPI; // times BSDF
 			M++;
 		}
 

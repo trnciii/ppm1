@@ -43,6 +43,15 @@ struct Tree{
 		}
 	};
 
+	struct Result{
+		float distance;
+		Photon photon;
+
+		Result(Photon p, float d):distance(d), photon(p){}
+
+		static bool compareDistance(const Result& a, const Result& b){return a.distance < b.distance;}
+	};
+
 
 private:
 
@@ -92,10 +101,10 @@ public:
 		return true;
 	}
 
-	std::vector<std::pair<Photon, double>> searchNN(const hitpoint& hit){
+	std::vector<Result> searchNN(const hitpoint& hit){
 		if(!hasTree()) return searchNN_checkAll(hit);
 
-		std::vector<std::pair<Photon, double>> result;
+		std::vector<Result> result;
 
 		auto node = nodes.begin();
 		while(node < nodes.end()){
@@ -107,8 +116,8 @@ public:
 						double l = abs(d);
 						d /= l;
 
-						if(l < hit.R && dot(hit.n, d) < hit.R*hit.R*0.01)
-							result.push_back(std::pair<Photon, double>(node->begin[i], l));
+						if(l < hit.R && dot(hit.n, d) < hit.R*0.01)
+							result.push_back(Result(node->begin[i], l));
 					}
 
 				node++;
@@ -119,13 +128,13 @@ public:
 		return result;
 	}
 
-	std::vector<std::pair<Photon, double>> searchNN_checkAll(const hitpoint& hit){
-		std::vector<std::pair<Photon, double>> result;
+	std::vector<Result> searchNN_checkAll(const hitpoint& hit){
+		std::vector<Result> result;
 		
 		for(auto v : verts){
 			double d = abs(v.p-hit.p);
 			if(d < hit.R)
-				result.push_back(std::pair<Photon, double>(v, d));
+				result.push_back(Result(v, d));
 		}
 
 		return result;
