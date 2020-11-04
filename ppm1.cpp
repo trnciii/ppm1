@@ -1,10 +1,9 @@
 // -- todo --
-// acceralation structure
 // BSDFs
 // parallelization
 // triangle mesh
-// validate disc assumption
-// structuration of codes (main)
+// move to cuda
+// add interface
 
 #include <filesystem>
 #include <cassert>
@@ -70,12 +69,12 @@ int main(void){
 	vec3* result_emit = new vec3[width*height];
 
 	// render parameters
-	int nIteration = 10000;
-	int outInterval = 20;
+	int nIteration = 100000;
+	int outInterval = 100;
 
 	int nPhoton = 100000;
 	int nRay = 4;
-	double alpha = 0.7;
+	double alpha = 0.6;
 
 	std::vector<hitpoint> hitpoints = createHitpoints(scene, width, height, nRay, &rand, result_emit);
 
