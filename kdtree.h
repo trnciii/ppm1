@@ -97,7 +97,7 @@ public:
 		Node node(verts.begin(), verts.end());
 		nodes.push_back(node);
 		if(nElements < node.size)split(verts.begin(), verts.end(), node.axis());
-		
+		nodes[0].next = nodes.size();
 		return true;
 	}
 
