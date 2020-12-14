@@ -70,9 +70,9 @@ int main(void){
 
 	// render parameters
 	int nIteration = 100000;
-	int outInterval = 100;
+	int outInterval = 10;
 
-	int nPhoton = 100000;
+	int nPhoton = 1000;
 	int nRay = 4;
 	double alpha = 0.6;
 
