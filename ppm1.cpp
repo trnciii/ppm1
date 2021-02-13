@@ -50,7 +50,7 @@ int main(void){
 	// create output directory.
 	// using string for dir-name to later create output filename
 	// because the format of path::c_str depends on OS.
-	std::string outDir("result_master");
+	std::string outDir("result");
 	if(!( std::filesystem::exists(outDir) && std::filesystem::is_directory(outDir) )){
 		std::cout <<"mkdir " <<outDir <<std::endl;
 		printBr();
@@ -69,18 +69,19 @@ int main(void){
 	vec3* result_emit = new vec3[width*height];
 
 	// render parameters
-	int nIteration = 100000;
-	int outInterval = 10;
+	int nIteration = 1000;
+	int outInterval = 100;
 
-	int nPhoton = 1000;
+	int nPhoton = 10000;
 	int nRay = 4;
 	double alpha = 0.6;
 
 	std::vector<hitpoint> hitpoints = createHitpoints(scene, width, height, nRay, &rand, result_emit);
 
+	std::cout <<"iterations: ";
 	// progressive estimation pass
 	for(int iteration=1; iteration<=nIteration; iteration++){
-		std::cout <<"itr " <<iteration <<std::endl;
+		std::cout <<iteration <<", " <<std::flush;
 
 		Tree photonmap = createPhotonmap(scene, nPhoton, &rand);
 		accumulateRadiance(hitpoints, photonmap, scene, alpha);
