@@ -113,7 +113,7 @@ public:
 					for(int i=0; i<node->size; i++){
 						Photon& photon = node->begin[i];
 						vec3 d = photon.p - hit.p;
-						double l = abs(d);
+						double l = length(d);
 						d /= l;
 
 						if(l < hit.R && dot(hit.n, d) < hit.R*0.01)
@@ -132,7 +132,7 @@ public:
 		std::vector<Result> result;
 		
 		for(auto v : verts){
-			double d = abs(v.p-hit.p);
+			double d = length(v.p-hit.p);
 			if(d < hit.R)
 				result.push_back(Result(v, d));
 		}
